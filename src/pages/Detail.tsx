@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import styled from "styled-components";
 import BackButton from "../components/BackButton";
 import { useParams } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 
 interface AnimeDetail {
     title: string;
@@ -46,36 +46,34 @@ const Synopsis = styled.p`
     opacity: 0.9;
 `;
 
+const fetchFn = (id: string) => fetch(`https://api.jikan.moe/v4/anime/${id}`)
+    .then(response => response.json()).then((data: AnimeDetail) => data);
+
 export default function Detail() {
-    const { id } = useParams();
-    const [data, setData] = useState<AnimeDetail | null>(null);
+    const { id } = useParams<{ id: string}>();
 
-    useEffect(() => {
-        if (!id) return;
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['detail', id],
+        queryFn: () => fetchFn(id!)
+    })
 
-        fetch(`https://api.jikan.moe/v4/anime/${id}`)
-            .then(res => res.json())
-            .then(json => {
-                setData(json.data);
-            });
-    }, [id]);
-
-    if (!data) return <p>Loading...</p>;
+    if (isLoading) return <p>Loading...</p>;
+    if (isError) return <p>Error fetching data</p>;
 
     return (
         <Wrapper>
             <BackButton />
 
-            <Poster src={data.images.jpg.large_image_url} />
+            <Poster src={data!.images.jpg.large_image_url} />
 
-            <Title>{data.title}</Title>
+            <Title>{data!.title}</Title>
 
             <Info>
-                <p>Year: {data.year || "N/A"}</p>
-                <p>Score: {data.score || "N/A"}</p>
+                <p>Year: {data!.year || "N/A"}</p>
+                <p>Score: {data!.score || "N/A"}</p>
             </Info>
 
-            <Synopsis>{data.synopsis}</Synopsis>
+            <Synopsis>{data!.synopsis}</Synopsis>
         </Wrapper>
     );
 }
