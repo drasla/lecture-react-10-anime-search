@@ -78,8 +78,8 @@ export default function Search() {
 
     const [query, setQuery] = useState(keyword);
     const { data, isLoading, isError } = useQuery({
-        queryKey:['search', query],
-        queryFn: () => fetchFn(query)
+        queryKey:['search', keyword],
+        queryFn: () => fetchFn(keyword)
     });
 
     const onSubmit = (e: FormEvent) => {
