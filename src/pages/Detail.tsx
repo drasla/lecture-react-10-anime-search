@@ -8,7 +8,7 @@ interface AnimeDetail {
     synopsis: string;
     year: number | null;
     images: {
-        jpg: {
+        jpg?: {
             large_image_url: string;
         };
     };
@@ -46,16 +46,18 @@ const Synopsis = styled.p`
     opacity: 0.9;
 `;
 
-const fetchFn = (id: string) => fetch(`https://api.jikan.moe/v4/anime/${id}`)
-    .then(response => response.json()).then((data: AnimeDetail) => data);
+const fetchFn = (id: string) =>
+    fetch(`https://api.jikan.moe/v4/anime/${id}`)
+        .then(response => response.json())
+        .then((data: { data: AnimeDetail }) => data.data);
 
 export default function Detail() {
-    const { id } = useParams<{ id: string}>();
+    const { id } = useParams<{ id: string }>();
 
     const { data, isLoading, isError } = useQuery({
-        queryKey: ['detail', id],
-        queryFn: () => fetchFn(id!)
-    })
+        queryKey: ["detail", id],
+        queryFn: () => fetchFn(id!),
+    });
 
     if (isLoading) return <p>Loading...</p>;
     if (isError) return <p>Error fetching data</p>;
@@ -64,7 +66,7 @@ export default function Detail() {
         <Wrapper>
             <BackButton />
 
-            <Poster src={data!.images.jpg.large_image_url} />
+            <Poster src={data!.images?.jpg?.large_image_url} />
 
             <Title>{data!.title}</Title>
 
